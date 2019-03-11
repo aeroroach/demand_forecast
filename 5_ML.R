@@ -1,0 +1,223 @@
+HS_forecast <- function(trade_agg, con_loop, log_path) {
+  
+  lambda <- NULL
+  log_skip <- NULL
+  log_ML <- NULL
+  
+  for (i in 1:nrow(con_loop)) {
+    
+    print(paste("========= Progress", i, "/", nrow(con_loop)))
+    
+    # Filtering selected HS model
+    training_set <- trade_agg$train
+    test_set <- trade_agg$test
+    
+    brand <- con_loop$trade_product_brand[i]
+    model <- con_loop$trade_product_model[i]
+    
+    # print(paste("=========", brand, model, "Training stage"))
+    
+    training_set %>% 
+      filter(trade_product_brand == brand,
+             trade_product_model == model) %>% 
+      ungroup() %>% 
+      select(-trade_product_brand, -trade_product_model, -range_week, -index) -> training_set
+    
+    test_set %>% 
+      filter(trade_product_brand == brand,
+             trade_product_model == model) %>% 
+      ungroup %>% 
+      select(-trade_product_brand, -trade_product_model, -range_week, -index) -> test_set
+    
+    # Check discount level
+    # backup_discount <- unique(training_set$dis_cat)
+    dis_level <- length(unique(training_set$dis_cat))
+    dis_check <- unique(test_set$dis_cat) %in% unique(training_set$dis_cat)
+    
+    if (dis_level > 1 & all(dis_check) == F) {
+      
+      fil_dis <- unique(test_set$dis_cat)[dis_check]
+      test_set %>% 
+        filter(dis_cat %in% fil_dis) -> test_set
+      
+    } else if (dis_level == 1) {
+      
+      training_set %>%
+        ungroup() %>% 
+        select(-dis_cat) -> training_set
+      
+      test_set %>% 
+        ungroup() %>% 
+        select(-dis_cat) -> test_set
+      
+    }
+    
+    # Fitting initial poisson  
+    fitpois <- glm(sales ~ .,
+                   family = "poisson",
+                   data = training_set)
+    
+    # Removing outlier
+    training_set$res <- abs(training_set$sales - fitpois$fitted.values)
+    training_set$res_prop <- abs(training_set$sales - fitpois$fitted.values)/fitpois$fitted.value
+    
+    topres <- quantile(training_set$res, .95)
+    topresprop <- quantile(training_set$res_prop, .95)
+    
+    training_set %>% 
+      filter(res < topres, res_prop < topresprop) %>% 
+      select(-res, -res_prop) -> training_set
+    
+    # Checking discount level again after remove outliers
+    if (dis_level > 1) {
+      dis_level_second <- length(unique(training_set$dis_cat))
+      dis_check_second <- unique(test_set$dis_cat) %in% unique(training_set$dis_cat)
+      
+    } else {
+      dis_level_second <- 0
+      dis_check_second <- T
+    }
+    
+    if (dis_level_second > 1 & all(dis_check_second) == F) {
+      
+      fil_dis <- unique(test_set$dis_cat)[dis_check_second]
+      test_set %>% 
+        filter(dis_cat %in% fil_dis) -> test_set
+      
+    } else if (dis_level_second == 1) {
+      
+      training_set %>%
+        ungroup() %>% 
+        select(-dis_cat) -> training_set
+      
+      test_set %>% 
+        ungroup() %>% 
+        select(-dis_cat) -> test_set
+      
+    }
+    
+    # Fitting final poisson
+    fitpois <- glm(sales ~ ., 
+                   family = "poisson", 
+                   data = training_set)
+    
+    # Coefficient checking
+    age_coef <- fitpois$coefficients["age_week"]
+    boost_coef <- fitpois$coefficients["boosting_flag1"]
+    
+    # Checking boost effect
+    training_set %>% 
+      filter(boosting_flag == 1) -> last_boost
+    last_boost <- max(last_boost$age_week)
+    
+    # Check boost coef
+    # if (age_coef < 0) {
+      
+      if (boost_coef < 0) {
+        boost_coef <- 0
+        fitpois <- glm(sales ~ . -boosting_flag, 
+                       family = "poisson", 
+                       data = training_set)
+      }
+      
+      # Validate
+      test_set$pred <- predict(fitpois, newdata = test_set, type = "response")
+      
+      test_set %>% 
+        group_by(age_week) %>% 
+        summarise(actual = sum(sales), pred_sum = sum(pred)) -> result
+      
+      # Bias adjustment
+      bias <- mean(result$actual/result$pred_sum)
+      
+      result %>% 
+        mutate(pred_sum = pred_sum * bias,
+               res = actual - pred_sum) -> result
+      
+      # Measurement logging
+      lamb_log <- data.frame(loop_index = i,
+                             HS_brand = brand,
+                             HS_model = model,
+                             Age_week = max(test_set$age_week),
+                             n = nrow(training_set),
+                             last_boost = last_boost,
+                             age_co = as.numeric(age_coef),
+                             boost_co = as.numeric(boost_coef),
+                             RMSE = round(sqrt(mean(result$res^2)), digits = 2),
+                             MAPE = round(mean(abs(result$res/result$pred_sum)*100), digits = 2),
+                             bias = bias,
+                             stringsAsFactors = F)
+      
+      # print(paste("=========", brand, model, "Prediction stage"))
+      
+      # Expand grid for prediction template
+      if (dis_level_second != 0) {
+        dis <- unique(training_set$dis_cat)
+      } else {
+        dis <- factor(1)
+      }
+      
+      boost <- unique(training_set$boosting_flag)
+      week <- 0:104
+      
+      pred_tbl <- expand.grid(age_week = week,
+                              dis_cat = dis,
+                              boosting_flag = boost)
+      
+      # Prediction
+      pred_tbl$pred <- predict(fitpois, newdata = pred_tbl, type = "response")
+      
+      # Cap maximum sales
+      pred_tbl %>% 
+        mutate(pred = pred*bias,
+               pred = case_when(
+                 pred > max(training_set$sales)*3 ~ round(max(training_set$sales)*4, digits = 2),
+                 TRUE ~ round(pred, digits = 2))) -> pred_tbl
+      
+      # Fill missing discount
+      dis_all <- as.character(1:5)
+      pred_tbl %>% 
+        mutate(dis_cat = as.character(dis_cat)) %>% 
+        group_by(age_week, boosting_flag) %>% 
+        complete(dis_cat = dis_all) %>% 
+        fill(pred) -> pred_tbl
+      
+      pred_tbl %>% 
+        mutate(trade_product_brand = brand,
+               trade_product_model = model) %>% 
+        select(trade_product_brand, trade_product_model,
+               age_week, dis_cat, boosting_flag, pred) -> pred_tbl
+      
+      # Coerce to character
+      # pred_tbl$dis_cat <- as.character(pred_tbl$dis_cat)
+      pred_tbl$boosting_flag <- as.character(pred_tbl$boosting_flag)
+      
+      lambda <- bind_rows(lambda, pred_tbl)
+      log_ML <- bind_rows(log_ML, lamb_log)
+      
+    # } else {
+      
+      # print(paste("=========", brand, model, "is skipped due to short stock effect"))
+      # skip <- data.frame(HS_brand = brand,
+      #                    HS_model = model,
+      #                    Age_week = max(test_set$age_week),
+      #                    n = nrow(training_set),
+      #                    last_boost = last_boost,
+      #                    sales_min = min(training_set$sales),
+      #                    sales_q1 = as.numeric(quantile(training_set$sales, 0.25)),
+      #                    sales_med = median(training_set$sales),
+      #                    sales_q3 = as.numeric(quantile(training_set$sales, 0.75)),
+      #                    sales_max = max(training_set$sales),
+      #                    coef_age = age_coef)
+      # 
+      # log_skip <- bind_rows(log_skip, skip) 
+      
+    #}
+  }
+  
+  ML_path <- paste0(log_path, "log_ML.csv")
+  write_csv(log_ML, ML_path)
+  # write_csv(log_skip, skip_path)
+  return(lambda)
+  
+}
