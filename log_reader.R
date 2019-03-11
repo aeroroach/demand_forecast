@@ -8,5 +8,3 @@ log <- read_csv("/data01/pitchaym/HS_forecast/log/log_ML.csv")
 
 pre <- read_csv("/data01/pitchaym/HS_forecast/production/pre_Diag.csv")
 
-hist(lambda_tbl$pred)
-
