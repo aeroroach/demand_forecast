@@ -10,13 +10,13 @@ library(lubridate)
 
 # Working path ------------------------------------------------------------
 
-script_path <- "/home/pitchaym/HS_forecasting/production/"
-file_path <- "/data01/pitchaym/HS_forecast/input/"
+script_path <- "D:/R_project/HS_Forecast/"
+file_path <- "D:/R_project/HS_Forecast/input/"
 con_name <- "latest_control.dat"
 dt_name <- "latest_TDM_HS.dat"
 map_name <- "model_mapping.csv"
-log_path <- "/data01/pitchaym/HS_forecast/log/"
-out_path <- "/data01/pitchaym/HS_forecast/output/"
+log_path <- "D:/R_project/HS_Forecast/log/"
+out_path <- "D:/R_project/HS_Forecast/output/"
 
 # Data reading ------------------------------------------------------------
 
@@ -47,13 +47,13 @@ con_loop$index <- 1:nrow(con_loop)
 
 # Pre-Diagnostics ---------------------------------------------------------
 
-# print(paste("====== Pre Diagnostics in progress"))
-# 
-# fn_path <- paste0(script_path, "3_pre_diag.R")
-# 
-# source(fn_path)
-# 
-# pre_diag(trade_agg, con_loop, log_path)
+print(paste("====== Pre Diagnostics in progress"))
+
+fn_path <- paste0(script_path, "3_pre_diag.R")
+
+source(fn_path)
+
+pre_diag(trade_agg, con_loop, log_path)
 
 # Splitting data ----------------------------------------------------------
 
