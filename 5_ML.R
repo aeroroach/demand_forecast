@@ -105,6 +105,11 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
     age_coef <- fitpois$coefficients["age_week"]
     boost_coef <- fitpois$coefficients["boosting_flag1"]
     
+    # Imputing boost_coef
+    if (is.na(boost_coef)) {
+      boost_coef <- 0
+    }
+    
     # Checking boost effect
     training_set %>% 
       filter(boosting_flag == 1) -> last_boost
