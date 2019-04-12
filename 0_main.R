@@ -10,13 +10,28 @@ library(lubridate)
 
 # Working path ------------------------------------------------------------
 
-script_path <- "D:/R_project/HS_Forecast/"
-file_path <- "D:/R_project/HS_Forecast/input/"
-con_name <- "latest_control.dat"
-dt_name <- "latest_TDM_HS.dat"
-map_name <- "model_mapping.csv"
-log_path <- "D:/R_project/HS_Forecast/log/"
-out_path <- "D:/R_project/HS_Forecast/output/"
+# Checking working environment
+if(Sys.info()["sysname"] == "Windows") {
+  
+  script_path <- "D:/R_project/HS_Forecast/"
+  file_path <- "D:/R_project/HS_Forecast/input/"
+  con_name <- "latest_control.dat"
+  dt_name <- "latest_TDM_HS.dat"
+  map_name <- "model_mapping.csv"
+  log_path <- "D:/R_project/HS_Forecast/log/"
+  out_path <- "D:/R_project/HS_Forecast/output/"
+  
+} else {
+  
+  script_path <- "/home/tdmdf/HS_forecast/script/"
+  file_path <- "/home/tdmdf/HS_forecast/input/"
+  con_name <- "latest_control.dat"
+  dt_name <- "latest_TDM_HS.dat"
+  map_name <- "model_mapping.csv"
+  log_path <- "/home/tdmdf/HS_forecast/log/"
+  out_path <- "/home/tdmdf/HS_forecast/output/"
+  
+}
 
 # Data reading ------------------------------------------------------------
 
