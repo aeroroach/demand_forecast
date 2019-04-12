@@ -8,6 +8,12 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
     
     print(paste("========= Progress", i, "/", nrow(con_loop)))
     
+    # Handling error
+    tryCatch({
+    
+    # Force error to test function
+    # if (i==7) stop("Testing error")
+      
     # Filtering selected HS model
     training_set <- trade_agg$train
     test_set <- trade_agg$test
@@ -218,6 +224,8 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
       # log_skip <- bind_rows(log_skip, skip) 
       
     #}
+      
+    }, error = function(e){cat("ERROR :",conditionMessage(e), "\n") })
   }
   
   ML_path <- paste0(log_path, "log_ML.csv")
