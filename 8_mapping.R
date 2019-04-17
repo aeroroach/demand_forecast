@@ -6,6 +6,7 @@ HS_map <- function(file_path ,map_name , lambda, branch, full_dt, con_name) {
   # Reading data
   new_hs <- read_csv(map_path)
   new_hs %>% 
+    filter(!is.na(trade_product_brand) & !is.na(trade_product_model) & !is.na(map_brand) & !is.na(map_model)) %>%
     rename(new_brand = trade_product_brand) %>% 
     rename(new_model = trade_product_model) -> new_hs
   
