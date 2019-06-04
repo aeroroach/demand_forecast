@@ -17,7 +17,7 @@ if(Sys.info()["sysname"] == "Windows") {
   file_path <- "D:/R_project/HS_Forecast/input/"
   con_name <- "latest_control.dat"
   dt_name <- "latest_TDM_HS.dat"
-  map_name <- "model_mapping.csv"
+  map_name <- "model_mapping.dat"
   log_path <- "D:/R_project/HS_Forecast/log/"
   out_path <- "D:/R_project/HS_Forecast/output/"
   
@@ -27,7 +27,7 @@ if(Sys.info()["sysname"] == "Windows") {
   file_path <- "/home/tdmdf/HS_forecast/input/"
   con_name <- "latest_control.dat"
   dt_name <- "latest_TDM_HS.dat"
-  map_name <- "model_mapping.csv"
+  map_name <- "model_mapping.dat"
   log_path <- "/home/tdmdf/HS_forecast/log/"
   out_path <- "/home/tdmdf/HS_forecast/output/"
   
