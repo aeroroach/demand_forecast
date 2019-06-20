@@ -6,10 +6,14 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
   
   for (i in 1:nrow(con_loop)) {
     
-    print(paste("========= Progress", i, "/", nrow(con_loop)))
-    
     # Handling error
     tryCatch({
+    
+    # Getting brand & model name
+    brand <- con_loop$trade_product_brand[i]
+    model <- con_loop$trade_product_model[i]
+    
+    print(paste("========= Progress", i, "/", nrow(con_loop), "::", brand, model))
     
     # Force error to test function
     # if (i==7) stop("Testing error")
@@ -17,9 +21,6 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
     # Filtering selected HS model
     training_set <- trade_agg$train
     test_set <- trade_agg$test
-    
-    brand <- con_loop$trade_product_brand[i]
-    model <- con_loop$trade_product_model[i]
     
     # print(paste("=========", brand, model, "Training stage"))
     

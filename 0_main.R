@@ -121,16 +121,16 @@ branch <- HS_branch(full_dt)
 # Model Mapping -----------------------------------------------------------
 
 
-print(paste("====== Model Mapping"))
-
-fn_path <- paste0(script_path, "8_mapping.R")
-
-source(fn_path)
-
-result_mapped <- HS_map(file_path ,map_name , lambda, branch, full_dt, con_name)
-
-lambda <- result_mapped$lambda
-branch <- result_mapped$branch
+# print(paste("====== Model Mapping"))
+# 
+# fn_path <- paste0(script_path, "8_mapping.R")
+# 
+# source(fn_path)
+# 
+# result_mapped <- HS_map(file_path ,map_name , lambda, branch, full_dt, con_name)
+# 
+# lambda <- result_mapped$lambda
+# branch <- result_mapped$branch
 
 # Writing File ------------------------------------------------------------
 
