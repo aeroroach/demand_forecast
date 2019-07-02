@@ -59,6 +59,17 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
       
     }
     
+    # Check boost level
+    boost_level <- length(unique(training_set$boosting_flag))
+    
+    if (boost_level == 1) {
+      training_set %>% 
+        select(-boosting_flag) -> training_set
+      
+      test_set %>% 
+        select(-boosting_flag) -> test_set
+    }
+    
     # Fitting initial poisson  
     fitpois <- glm(sales ~ .,
                    family = "poisson",
@@ -118,13 +129,15 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
     }
     
     # Checking boost effect
-    training_set %>% 
-      filter(boosting_flag == 1) -> last_boost
-    last_boost <- max(last_boost$age_week)
+    if (boost_level > 1) {
+      training_set %>% 
+        filter(boosting_flag == 1) -> last_boost
+      last_boost <- max(last_boost$age_week)
+    } else {
+      last_boost <- NA
+    }
     
     # Check boost coef
-    # if (age_coef < 0) {
-      
       if (boost_coef < 0) {
         boost_coef <- 0
         fitpois <- glm(sales ~ . -boosting_flag, 
@@ -140,7 +153,7 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
         summarise(actual = sum(sales), pred_sum = sum(pred)) -> result
       
       # Bias adjustment
-      bias <- mean(result$actual/result$pred_sum)
+      bias <- median(result$actual/result$pred_sum)
       
       result %>% 
         mutate(pred_sum = pred_sum * bias,
@@ -169,7 +182,7 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
         dis <- factor(1)
       }
       
-      boost <- unique(training_set$boosting_flag)
+      boost <- factor(0:1)
       week <- 0:104
       
       pred_tbl <- expand.grid(age_week = week,
@@ -183,7 +196,7 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
       pred_tbl %>% 
         mutate(pred = pred*bias,
                pred = case_when(
-                 pred > max(training_set$sales)*3 ~ round(max(training_set$sales)*4, digits = 2),
+                 pred > max(training_set$sales)*2 ~ round(max(training_set$sales)*2, digits = 2),
                  TRUE ~ round(pred, digits = 2))) -> pred_tbl
       
       # Fill missing discount
@@ -206,25 +219,6 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
       
       lambda <- bind_rows(lambda, pred_tbl)
       log_ML <- bind_rows(log_ML, lamb_log)
-      
-    # } else {
-      
-      # print(paste("=========", brand, model, "is skipped due to short stock effect"))
-      # skip <- data.frame(HS_brand = brand,
-      #                    HS_model = model,
-      #                    Age_week = max(test_set$age_week),
-      #                    n = nrow(training_set),
-      #                    last_boost = last_boost,
-      #                    sales_min = min(training_set$sales),
-      #                    sales_q1 = as.numeric(quantile(training_set$sales, 0.25)),
-      #                    sales_med = median(training_set$sales),
-      #                    sales_q3 = as.numeric(quantile(training_set$sales, 0.75)),
-      #                    sales_max = max(training_set$sales),
-      #                    coef_age = age_coef)
-      # 
-      # log_skip <- bind_rows(log_skip, skip) 
-      
-    #}
       
     }, error = function(e){cat("ERROR :",conditionMessage(e), "\n") })
   }
