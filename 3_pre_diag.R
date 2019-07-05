@@ -3,7 +3,7 @@ pre_diag <- function(trade_agg, con_loop, log_path) {
   prediag <- NULL
   
   trade_agg %>% 
-    group_by(trade_product_brand, trade_product_model, age_week) %>% 
+    group_by(trade_product_brand, trade_product_model, product_subtype, age_week) %>% 
     summarise(sales = sum(sales)) -> trade_pre
   
   for (i in 1:nrow(con_loop)) {
@@ -13,9 +13,12 @@ pre_diag <- function(trade_agg, con_loop, log_path) {
     # Filtering data for each loop
     brand <- con_loop$trade_product_brand[i]
     model <- con_loop$trade_product_model[i]
+    sub_type <- con_loop$product_subtype[i]
+    
     trade_pre %>% 
       filter(trade_product_brand == brand,
-             trade_product_model == model) %>% 
+             trade_product_model == model, 
+             product_subtype == sub_type) %>% 
       arrange(age_week) -> model_agg
     
     # Filtering 75% observation since beginning
@@ -51,6 +54,7 @@ pre_diag <- function(trade_agg, con_loop, log_path) {
     # Writing log
     pre_model <- data.frame(HS_brand = brand,
                             HS_model = model,
+                            HS_product_type = sub_type,
                             Age_week = age_max,
                             n = nrow(model_agg),
                             sales_min = min(model_agg$sales),

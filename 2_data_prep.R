@@ -17,23 +17,23 @@ data_prep <- function(full_dt, log_path) {
 
   # Initiate price master
   full_dt %>% 
-    select(trade_product_brand, trade_product_model ,age_week, retail_price) %>% 
+    select(trade_product_brand, trade_product_model, product_subtype, age_week, retail_price) %>% 
     distinct() %>% 
-    group_by(trade_product_brand, trade_product_model, age_week) %>% 
+    group_by(trade_product_brand, trade_product_model, product_subtype, age_week) %>% 
     filter(retail_price == max(retail_price)) -> price_master
   
   # Joining previous price back
   full_dt %>% 
     mutate(prev_4_week = age_week - 4) %>% 
     left_join(rename(price_master, prev_price = retail_price),
-              by = c("trade_product_brand", "trade_product_model", "prev_4_week"="age_week")) %>% 
+              by = c("trade_product_brand", "trade_product_model", "product_subtype","prev_4_week"="age_week")) %>% 
     mutate(price_diff = (prev_price - retail_price)/retail_price,
            price_diff = ifelse(is.na(price_diff),0,price_diff),
            price_drop_flag = ifelse(price_diff >= 0.1, 1, 0)) -> full_dt
   
   # Initiate min week
   full_dt %>% 
-    group_by(trade_product_brand, trade_product_model) %>% 
+    group_by(trade_product_brand, trade_product_model, product_subtype) %>% 
     mutate(min_week = min(age_week)) %>% 
     filter(min_week >= 0) %>% 
     filter(age_week > min_week +4) %>% 
@@ -46,7 +46,7 @@ data_prep <- function(full_dt, log_path) {
 
   print(paste("========= Final aggregation for model fitting"))
   full_dt %>% 
-    group_by(trade_product_brand,trade_product_model, age_week, dis_cat, boosting_flag) %>%
+    group_by(trade_product_brand,trade_product_model, product_subtype, age_week, dis_cat, boosting_flag) %>%
     summarise(sales = sum(sale_amount)) %>% 
     ungroup() -> agg_dt
 
@@ -69,7 +69,7 @@ data_prep <- function(full_dt, log_path) {
 
   # Initiate low obs table
   agg_dt %>% 
-    group_by(trade_product_brand, trade_product_model) %>% 
+    group_by(trade_product_brand, trade_product_model, product_subtype) %>% 
     summarise(max_w = max(age_week),
               min_w = min(age_week),
               range = max_w - min_w,
@@ -83,7 +83,7 @@ data_prep <- function(full_dt, log_path) {
   
   # Anti-join
   agg_dt %>% 
-    anti_join(agg_exclude, by = c("trade_product_brand", "trade_product_model")) -> agg_dt
+    anti_join(agg_exclude, by = c("trade_product_brand", "trade_product_model", "product_subtype")) -> agg_dt
   
   return(agg_dt)
 }

@@ -12,8 +12,9 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
     # Getting brand & model name
     brand <- con_loop$trade_product_brand[i]
     model <- con_loop$trade_product_model[i]
+    sub_type <- con_loop$product_subtype[i]
     
-    print(paste("========= Progress", i, "/", nrow(con_loop), "::", brand, model))
+    print(paste("========= Progress", i, "/", nrow(con_loop), "::", brand, model, sub_type))
     
     # Force error to test function
     # if (i==7) stop("Testing error")
@@ -26,15 +27,17 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
     
     training_set %>% 
       filter(trade_product_brand == brand,
-             trade_product_model == model) %>% 
+             trade_product_model == model, 
+             product_subtype == sub_type) %>% 
       ungroup() %>% 
-      select(-trade_product_brand, -trade_product_model, -range_week, -index) -> training_set
+      select(-trade_product_brand, -trade_product_model, -product_subtype, -range_week, -index) -> training_set
     
     test_set %>% 
       filter(trade_product_brand == brand,
-             trade_product_model == model) %>% 
-      ungroup %>% 
-      select(-trade_product_brand, -trade_product_model, -range_week, -index) -> test_set
+             trade_product_model == model, 
+             product_subtype == sub_type) %>% 
+      ungroup() %>% 
+      select(-trade_product_brand, -trade_product_model, -product_subtype, -range_week, -index) -> test_set
     
     # Check discount level
     # backup_discount <- unique(training_set$dis_cat)
@@ -163,6 +166,7 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
       lamb_log <- data.frame(loop_index = i,
                              HS_brand = brand,
                              HS_model = model,
+                             HS_subtype = sub_type,
                              Age_week = max(test_set$age_week),
                              n = nrow(training_set),
                              last_boost = last_boost,
@@ -200,21 +204,21 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
                  TRUE ~ round(pred, digits = 2))) -> pred_tbl
       
       # Fill missing discount
-      dis_all <- as.character(1:5)
+      dis_all <- 1:5
       pred_tbl %>% 
-        mutate(dis_cat = as.character(dis_cat)) %>% 
+        mutate(dis_cat = as.numeric(dis_cat)) %>% 
         group_by(age_week, boosting_flag) %>% 
         complete(dis_cat = dis_all) %>% 
         fill(pred) -> pred_tbl
       
       pred_tbl %>% 
         mutate(trade_product_brand = brand,
-               trade_product_model = model) %>% 
-        select(trade_product_brand, trade_product_model,
+               trade_product_model = model, 
+               product_subtype = sub_type) %>% 
+        select(trade_product_brand, trade_product_model, product_subtype,
                age_week, dis_cat, boosting_flag, pred) -> pred_tbl
       
       # Coerce to character
-      # pred_tbl$dis_cat <- as.character(pred_tbl$dis_cat)
       pred_tbl$boosting_flag <- as.character(pred_tbl$boosting_flag)
       
       lambda <- bind_rows(lambda, pred_tbl)

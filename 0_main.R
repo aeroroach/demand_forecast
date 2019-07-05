@@ -56,7 +56,7 @@ trade_agg <- data_prep(full_dt, log_path)
 # Generating loop control -------------------------------------------------
 
 trade_agg %>% 
-  distinct(trade_product_brand, trade_product_model) -> con_loop
+  distinct(trade_product_brand, trade_product_model, product_subtype) -> con_loop
 
 con_loop$index <- 1:nrow(con_loop)
 
@@ -98,7 +98,7 @@ lambda <- HS_forecast(trade_agg, con_loop, log_path)
 # Revising con loop base on lambda
 lambda %>% 
   ungroup() %>% 
-  distinct(trade_product_brand, trade_product_model) -> con_loop
+  distinct(trade_product_brand, trade_product_model, product_subtype) -> con_loop
 
 print(paste("====== Color mapping"))
 

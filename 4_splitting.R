@@ -3,7 +3,7 @@ trade_split <- function(trade_agg,
   
   # Initiate training index
   trade_agg %>% 
-    group_by(trade_product_brand, trade_product_model) %>% 
+    group_by(trade_product_brand, trade_product_model, product_subtype) %>% 
     mutate(range_week = round((max(age_week) - min(age_week))*train_prop, digits = 0),
            index = min(age_week) + range_week) -> trade_agg
   

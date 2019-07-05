@@ -17,20 +17,24 @@ data_clean <- function(file_path, con_name, dt_name) {
   con <- read_delim(control_path, delim = "|")
   
   con %>%
-    select(trade_product_brand, trade_product_model, launch_date) %>% 
+    select(trade_product_brand, trade_product_model, product_subtype, launch_date) %>% 
     distinct() %>% 
-    arrange(trade_product_brand, trade_product_model, launch_date) %>% 
-    group_by(trade_product_brand, trade_product_model) %>%
+    arrange(trade_product_brand, trade_product_model, product_subtype, launch_date) %>% 
+    group_by(trade_product_brand, trade_product_model, product_subtype) %>%
     top_n(-1) -> model_con
+  
+  # Select only HS
+  model_con %>% 
+    filter(product_subtype %in% c("HANDSET BUNDLE", "HANDSET")) -> model_con
   
   # Filtering full dt base on control path
   full_dt %>% 
-    semi_join(model_con, by = c("trade_product_brand", "trade_product_model")) -> full_dt
+    semi_join(model_con, by = c("trade_product_brand", "trade_product_model", "product_subtype")) -> full_dt
   
   # Joining launch date
   full_dt %>% 
-    left_join(select(model_con, trade_product_brand, trade_product_model, launch_date), 
-              by = c("trade_product_brand", "trade_product_model")) %>%
+    left_join(select(model_con, trade_product_brand, trade_product_model, product_subtype,launch_date), 
+              by = c("trade_product_brand", "trade_product_model", "product_subtype")) %>%
     mutate(age_week = ceiling(as.numeric(sale_date - ymd(launch_date))/7)) -> full_dt
   
   return(full_dt)
