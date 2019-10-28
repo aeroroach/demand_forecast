@@ -70,9 +70,9 @@ HS_map <- function(file_path ,map_name , lambda, branch, full_dt, con_name) {
     full_join(new_col, by = c("trade_product_brand", "trade_product_model", "product_subtype", "key")) %>% 
     select(-key) -> lambda_map
   
-  # Calculate average lambda
+  # Calculate average lambda and boost new model *2
   lambda_map %>% 
-    mutate(pred = round(pred/n_col, digits = 2)) %>% 
+    mutate(pred = round(pred*2/n_col, digits = 2)) %>% 
     select(trade_product_brand:boosting_flag, trade_product_color, pred) %>% 
     filter(!is.na(pred)) -> lambda_map
   
@@ -107,7 +107,7 @@ HS_map <- function(file_path ,map_name , lambda, branch, full_dt, con_name) {
   # Binding row
   branch <- bind_rows(branch, branch_map)
   
-# Creat list --------------------------------------------------------------
+# Create list --------------------------------------------------------------
 
   result_mapped <- list(lambda = lambda, 
                       branch = branch)
