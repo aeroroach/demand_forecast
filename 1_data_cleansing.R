@@ -24,8 +24,8 @@ data_clean <- function(file_path, con_name, dt_name) {
     top_n(-1) -> model_con
   
   # Select only HS
-  model_con %>% 
-    filter(product_subtype %in% c("HANDSET BUNDLE", "HANDSET")) -> model_con
+  # model_con %>% 
+  #   filter(product_subtype %in% c("HANDSET BUNDLE", "HANDSET")) -> model_con
   
   # Filtering full dt base on control path
   full_dt %>% 

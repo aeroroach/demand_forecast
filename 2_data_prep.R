@@ -74,7 +74,7 @@ data_prep <- function(full_dt, log_path) {
               min_w = min(age_week),
               range = max_w - min_w,
               n = n()) %>% 
-    filter(range < 8 | n < 10 | max_w > 208) -> agg_exclude
+    filter(n < 10 | max_w > 208) -> agg_exclude
   
   omit_path = paste0(log_path, "omit_HS.csv")
   write_csv(agg_exclude, omit_path)
