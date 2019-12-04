@@ -31,11 +31,12 @@ data_clean <- function(file_path, con_name, dt_name) {
   full_dt %>% 
     semi_join(model_con, by = c("trade_product_brand", "trade_product_model", "product_subtype")) -> full_dt
   
-  # Joining launch date
+  # Joining launch date and eliminate testing sales (minus age week)
   full_dt %>% 
     left_join(select(model_con, trade_product_brand, trade_product_model, product_subtype,launch_date), 
               by = c("trade_product_brand", "trade_product_model", "product_subtype")) %>%
-    mutate(age_week = ceiling(as.numeric(sale_date - ymd(launch_date))/7)) -> full_dt
+    mutate(age_week = ceiling(as.numeric(sale_date - ymd(launch_date))/7)) %>% 
+    filter(age_week >= 0) -> full_dt
   
   return(full_dt)
   

@@ -34,12 +34,9 @@ data_prep <- function(full_dt, log_path) {
   # Initiate min week
   full_dt %>% 
     group_by(trade_product_brand, trade_product_model, product_subtype) %>% 
-    mutate(min_week = min(age_week)) %>% 
-    filter(min_week >= 0) %>% 
-    filter(age_week > min_week +4) %>% 
-    mutate(min_week = min(age_week)) %>% 
+    mutate(min_week = min(age_week)) %>%
     ungroup() %>% 
-    mutate(launch_flag = ifelse(age_week <= min_week + 4, 1, 0),
+    mutate(launch_flag = ifelse(age_week <= min_week + 8, 1, 0),
            boosting_flag = ifelse(price_drop_flag == 1 | launch_flag == 1,1,0)) -> full_dt
 
 # Aggregate data for fitting ----------------------------------------------
@@ -74,7 +71,7 @@ data_prep <- function(full_dt, log_path) {
               min_w = min(age_week),
               range = max_w - min_w,
               n = n()) %>% 
-    filter(n < 10 | max_w > 208) -> agg_exclude
+    filter(n < 10 | max_w < 8 | max_w > 208) -> agg_exclude
   
   omit_path = paste0(log_path, "omit_HS.csv")
   write_csv(agg_exclude, omit_path)
@@ -83,7 +80,8 @@ data_prep <- function(full_dt, log_path) {
   
   # Anti-join
   agg_dt %>% 
-    anti_join(agg_exclude, by = c("trade_product_brand", "trade_product_model", "product_subtype")) -> agg_dt
+    anti_join(agg_exclude, by = c("trade_product_brand", "trade_product_model", "product_subtype")) %>% 
+    filter(age_week > 4) -> agg_dt
   
   return(agg_dt)
 }
