@@ -1,0 +1,57 @@
+---
+title: "Calculation Logic"
+author: "Pitchayen S."
+date: "28 มกราคม 2563"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Seperate by case scenarios
+
+```{r lib}
+library(lubridate)
+```
+
+Initialize launch date for HS
+
+```{r init_var}
+launch_date <- ymd("2019-01-01")
+```
+
+## Case 1 : 7 Days normal
+![](image/case_1.PNG)
+
+Remark :
+
+* L : Launch date
+* S : Start date
+* E : End date
+
+Age Week calculation
+```{r}
+start_date <- ymd("2019-01-10")
+end_date <- ymd("2019-01-16")
+
+# Calculate age week
+w_start <- ceiling(as.numeric(start_date - launch_date)/7)
+w_end <- ceiling(as.numeric(end_date - launch_date)/7)
+
+print(paste("w_start :", w_start))
+print(paste("w_end :", w_end))
+```
+
+Week fraction calculation
+```{r}
+# Minus 7 to get toward side and + 1 to get the begin date
+frac_start <- 7 - (day(start_date) %% 7) +1
+frac_end <- day(end_date) %% 7
+
+paste("frac_start :", frac_start)
+paste("frac_end :", frac_end)
+```
+
+## Case 2 : 10 Days normal
+![](image/case_2.PNG)
