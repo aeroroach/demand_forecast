@@ -46,12 +46,127 @@ print(paste("w_end :", w_end))
 Week fraction calculation
 ```{r}
 # Minus 7 to get toward side and + 1 to get the begin date
-frac_start <- 7 - (day(start_date) %% 7) +1
+frac_start <- (7 - (day(start_date) %% 7)) +1
 frac_end <- day(end_date) %% 7
 
 paste("frac_start :", frac_start)
 paste("frac_end :", frac_end)
 ```
 
+> `(frac_start/7)*w_start + (frac_end/7)*w_end`
+
 ## Case 2 : 10 Days normal
 ![](image/case_2.PNG)
+
+Age Week calculation
+```{r}
+start_date <- ymd("2019-01-10")
+end_date <- ymd("2019-01-19")
+
+# Calculate age week
+w_start <- ceiling(as.numeric(start_date - launch_date)/7)
+w_end <- ceiling(as.numeric(end_date - launch_date)/7)
+
+print(paste("w_start :", w_start))
+print(paste("w_end :", w_end))
+```
+
+Week fraction calculation
+```{r}
+frac_start <- (7 - (day(start_date) %% 7)) +1
+frac_end <- day(end_date) %% 7
+
+paste("frac_start :", frac_start)
+paste("frac_end :", frac_end)
+```
+
+> `(frac_start/7)*w_start + (frac_end/7)*w_end`
+
+## Case 3 : 7 Days but fraction start = 0
+![](image/case_3.PNG)
+
+Age Week calculation
+```{r}
+start_date <- ymd("2019-01-7")
+end_date <- ymd("2019-01-13")
+
+# Calculate age week
+w_start <- ceiling(as.numeric(start_date - launch_date)/7)
+w_end <- ceiling(as.numeric(end_date - launch_date)/7)
+
+print(paste("w_start :", w_start))
+print(paste("w_end :", w_end))
+```
+
+Week fraction calculation
+```{r}
+frac_start <- (7 - (day(start_date) %% 7)) +1
+frac_end <- day(end_date) %% 7
+
+paste("frac_start :", frac_start)
+paste("frac_end :", frac_end)
+```
+
+> `ifelse(frac_start == 8,1,frac_start)`
+> `(frac_start/7)*w_start + (frac_end/7)*w_end`
+
+## Case 4 : 10 Days but fraction start = 0
+![](image/case_4.PNG)
+
+Age Week calculation
+```{r}
+start_date <- ymd("2019-01-7")
+end_date <- ymd("2019-01-16")
+
+# Calculate age week
+w_start <- ceiling(as.numeric(start_date - launch_date)/7)
+w_end <- ceiling(as.numeric(end_date - launch_date)/7)
+
+print(paste("w_start :", w_start))
+print(paste("w_end :", w_end))
+```
+
+Week fraction calculation
+```{r}
+frac_start <- (7 - (day(start_date) %% 7)) +1
+frac_end <- day(end_date) %% 7
+
+paste("frac_start :", frac_start)
+paste("frac_end :", frac_end)
+```
+
+> `ifelse(frac_start == 8,1,frac_start)`
+> `w_between = ifelse((w_end - w_start) > 1, w_start + 1, 0)`
+> `(frac_start/7)*w_start + w_between + (frac_end/7)*w_end`
+
+## Case 5 : 7 Days but fraction start and fraction end = 0
+![](image/case_5.PNG)
+
+Age Week calculation
+```{r}
+start_date <- ymd("2019-01-8")
+end_date <- ymd("2019-01-14")
+
+# Calculate age week
+w_start <- ceiling(as.numeric(start_date - launch_date)/7)
+w_end <- ceiling(as.numeric(end_date - launch_date)/7)
+
+print(paste("w_start :", w_start))
+print(paste("w_end :", w_end))
+```
+
+Week fraction calculation
+```{r}
+frac_start <- (7 - (day(start_date) %% 7)) +1
+frac_end <- day(end_date) %% 7
+
+paste("frac_start :", frac_start)
+paste("frac_end :", frac_end)
+```
+
+> `ifelse(frac_start == 7,0,frac_start)`
+> `w_between = ifelse((w_end - w_start) > 1, w_start + 1, 0)`
+> `w_end`
+> `(frac_start/7)*w_start + w_between + (frac_end/7)*w_end`
+
+
