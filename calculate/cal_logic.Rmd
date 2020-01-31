@@ -9,7 +9,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Seperate by case scenarios
+## Objective
+
+Seperate the logic by initiate case scenarios
 
 ```{r lib}
 library(lubridate)
@@ -108,6 +110,7 @@ paste("frac_end :", frac_end)
 ```
 
 > `ifelse(frac_start == 8,1,frac_start)`
+
 > `(frac_start/7)*w_start + (frac_end/7)*w_end`
 
 ## Case 4 : 10 Days but fraction start = 0
@@ -136,7 +139,9 @@ paste("frac_end :", frac_end)
 ```
 
 > `ifelse(frac_start == 8,1,frac_start)`
-> `w_between = ifelse((w_end - w_start) > 1, w_start + 1, 0)`
+
+> `w_between = ifelse((w_end - w_start) > 1, w_start + 1, NA)`
+
 > `(frac_start/7)*w_start + w_between + (frac_end/7)*w_end`
 
 ## Case 5 : 7 Days but fraction start and fraction end = 0
@@ -165,8 +170,11 @@ paste("frac_end :", frac_end)
 ```
 
 > `ifelse(frac_start == 7,0,frac_start)`
+
 > `ifelse(frac_end == 0,7,frac_end)`
-> `w_between = ifelse((w_end - w_start) > 1, w_start + 1, 0)`
+
+> `w_between = ifelse((w_end - w_start) > 1, w_start + 1, NA)`
+
 > `(frac_start/7)*w_start + w_between + (frac_end/7)*w_end`
 
 ## Case 6 : 10 Days but fraction end = 0
@@ -195,6 +203,8 @@ paste("frac_end :", frac_end)
 ```
 
 > `ifelse(frac_end == 0,7,frac_end)`
-> `w_between = ifelse((w_end - w_start) > 1, w_start + 1, 0)`
+
+> `w_between = ifelse((w_end - w_start) > 1, w_start + 1, NA)`
+
 > `(frac_start/7)*w_start + w_between + (frac_end/7)*w_end`
 
