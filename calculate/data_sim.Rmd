@@ -53,7 +53,8 @@ dt %>%
          frac_start = (7 - (day(start_date) %% 7)) +1, 
          frac_end = day(end_date) %% 7) -> dt_cal
 
-dt_cal
+dt_cal %>% 
+  select(case, duration:frac_end)
 ```
 
 # Override value by case
@@ -63,31 +64,35 @@ dt_cal %>%
   mutate(w_between = ifelse(as.numeric(w_end - w_start) > 1, w_start + 1, NA), 
          frac_start = case_when(
            frac_start == 8 ~ 1, 
-           frac_end == 7 ~ 0,
+           frac_start == 7 ~ 0,
            TRUE ~ frac_start
          ), 
          frac_end = ifelse(frac_end == 0, 7, frac_end)
          ) -> dt_mod
 
-dt_mod
+dt_mod %>% 
+  select(case, duration:w_between)
 ```
 
 ## Mapping with lambda
 
 ```{r}
 dt_mod %>% 
-  left_join(lam_sim, by = c("w_start"="age_week"))
+  left_join(lam_sim, by = c("w_start"="age_week")) %>% 
+  left_join(lam_sim, by = c("w_between"="age_week"), suffix = c("","_w_between")) %>% 
+  left_join(lam_sim, by = c("w_end"="age_week"), suffix = c("","_w_end")) %>% 
+  rename(lambda_w_start = lambda) %>% 
+  mutate(lambda_w_between = ifelse(is.na(lambda_w_between), 0, lambda_w_between)) -> dt_join
+
+dt_join %>% 
+  select(case, lambda_w_start:lambda_w_end)
 ```
 
+## Calculating final output
 
-
-
-
-
-
-
-
-
-
-
+```{r}
+dt_join %>% 
+  mutate(sum_lambda = ((frac_start/7)*lambda_w_start) + (lambda_w_between) + ((frac_end/7)*lambda_w_end)) %>% 
+  select(case, lambda_w_start:sum_lambda)
+```
 
