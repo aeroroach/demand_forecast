@@ -23,10 +23,10 @@ library(lubridate)
 
 ```{r}
 dt <- tibble(
-  case = 1:6,
-  launch_date = ymd("2019-01-01"),
-  start_date = ymd(c("2019-01-10", "2019-01-10", "2019-01-7", "2019-01-7", "2019-01-8", "2019-01-5")),
-  end_date = ymd(c("2019-01-16", "2019-01-19", "2019-01-13", "2019-01-16", "2019-01-14", "2019-01-14"))
+  case = 1:5,
+  launch_date = ymd("2019-01-03"),
+  start_date = ymd(c("2019-01-12", "2019-01-12", "2019-01-10", "2019-01-10", "2019-01-14")),
+  end_date = ymd(c("2019-01-18", "2019-01-21", "2019-01-16", "2019-01-19", "2019-01-23"))
 )
 
 dt %>% 
@@ -48,10 +48,11 @@ lam_sim
 
 ```{r}
 dt %>% 
-  mutate(w_start = ceiling(as.numeric(start_date - launch_date)/7), 
-         w_end = ceiling(as.numeric(end_date - launch_date)/7), 
-         frac_start = (7 - (day(start_date) %% 7)) +1, 
-         frac_end = day(end_date) %% 7) -> dt_cal
+  mutate(w_start = ceiling((as.numeric(start_date - launch_date) + 1)/7), 
+         w_end = ceiling((as.numeric(end_date - launch_date) + 1)/7), 
+         frac_start_tmp = as.numeric(start_date - launch_date)  %% 7,
+         frac_start = 7 - frac_start_tmp, 
+         frac_end = ((as.numeric(end_date - launch_date) + 1) %% 7)) -> dt_cal
 
 dt_cal %>% 
   select(case, duration:frac_end)
@@ -61,13 +62,7 @@ dt_cal %>%
 
 ```{r}
 dt_cal %>% 
-  mutate(frac_start = case_when(
-           frac_start == 8 & (w_end - w_start) == 1 ~ 1, 
-           frac_start == 7 ~ 0,
-           TRUE ~ frac_start
-         ), 
-         frac_end = ifelse(frac_end == 0, 7, frac_end), 
-         w_start = ifelse(as.numeric(w_end - w_start) > 1, w_start + 1, w_start)
+  mutate(frac_end = ifelse(frac_end == 0 & frac_start_tmp != 0, 7, frac_end)
          ) -> dt_mod
 
 dt_mod %>% 
