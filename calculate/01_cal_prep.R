@@ -84,7 +84,7 @@ branch_map <- function(dt, dt_branch) {
 sales_map <- function(dt, dt_result) {
   
   dt_result %>% 
-    select(LOCATION_CODE:END_DATE, SALE_AMT) -> dt_result
+    select(LOCATION_CODE:END_DATE, FORECAST_SALE_AMT, SALE_AMT, STOCK_ON_HAND_AMT) -> dt_result
   
   dt %>% 
     left_join(dt_result, by = c("LOCATION_CODE", "MAT_CODE", "PRODUCT_SUBTYPE", "TRADE_PRODUCT_BRAND", "TRADE_PRODUCT_MODEL", 
