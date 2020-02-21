@@ -2,10 +2,10 @@ prep_week <- function(dt) {
   
   # Initial week calculation
   dt %>% 
-    mutate(LUNCH_DATE = dmy(LUNCH_DATE), 
-           START_DATE = dmy(START_DATE),
-           END_DATE = dmy(END_DATE),
-           REQ_DATE = dmy(REQ_DATE),
+    mutate(LUNCH_DATE = mdy(LUNCH_DATE), 
+           START_DATE = mdy(START_DATE),
+           END_DATE = mdy(END_DATE),
+           REQ_DATE = mdy(REQ_DATE),
            w_start = ceiling((as.numeric(START_DATE - LUNCH_DATE) + 1)/7), 
            w_end = ceiling((as.numeric(END_DATE - LUNCH_DATE) + 1)/7), 
            frac_start_tmp = as.numeric(START_DATE - LUNCH_DATE)  %% 7,

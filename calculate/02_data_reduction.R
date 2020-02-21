@@ -25,7 +25,7 @@ data_reduc <- function(dt, dt_result) {
   
   # Filtering only available items
   dt_result %>% 
-    mutate(REQ_DATE = dmy(REQ_DATE)) -> dt_result
+    mutate(REQ_DATE = mdy(REQ_DATE)) -> dt_result
   
   dt %>% 
     semi_join(dt_result, by = c("trade_product_brand"="TRADE_PRODUCT_BRAND",

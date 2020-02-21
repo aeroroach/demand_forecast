@@ -8,7 +8,7 @@ dt_sales <- read_delim("calculate/input/INPUT_SALE_DATA_20200206_030000.dat", de
 dt_lambda <- read_delim("calculate/input/lambda_20200206_110117.csv", delim = "|")
 dt_branch <- read_delim("calculate/input/branch_20200206_110122.csv", delim = "|")
 
-dt_result <- read_csv("calculate/input/200211_report_check.csv")
+dt_result <- read_csv("calculate/input/200220_report_check.csv")
 
 # Discount mapping --------------------------------------------------------
 
