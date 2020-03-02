@@ -1,0 +1,92 @@
+---
+title: "Calculation Logic"
+author: "Pitchayen S."
+date: "28 มกราคม 2563"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Objective
+
+Seperate the logic by initiate case scenarios
+
+```{r lib}
+library(lubridate)
+```
+
+Initialize launch date for HS
+
+```{r init_var}
+launch_date <- ymd("2019-01-03")
+```
+
+## Case 1 : 12 weeks normal
+
+Remark :
+
+* L : Launch date
+* S : Start date
+* E : End date
+
+Age Week calculation
+```{r}
+start_date <- ymd("2019-01-12")
+end_date <- ymd("2019-04-12")
+
+# Calculate age week
+w_start <- ceiling((as.numeric(start_date - launch_date) + 1)/7)
+w_end <- ceiling((as.numeric(end_date - launch_date) + 1)/7)
+
+print(paste("w_start :", w_start))
+print(paste("w_end :", w_end))
+```
+
+> `w_between` = aggregation of `age_week` > 2 & `age_week` < 15
+
+Week fraction calculation
+```{r}
+frac_start_tmp <- as.numeric(start_date - launch_date)  %% 7
+frac_start <- 7 - frac_start_tmp
+frac_end <- ((as.numeric(end_date - launch_date) + 1) %% 7)
+
+paste("frac_start_tmp :", frac_start_tmp)
+paste("frac_start :", frac_start)
+paste("frac_end :", frac_end)
+```
+
+> `(frac_start/7)*w_start + w_between + (frac_end/7)*w_end`
+
+## Case 2 : 12 Weeks but frac_start = 0
+
+It's automatically made fraction end = 0
+
+Age Week calculation
+```{r}
+start_date <- ymd("2019-01-10")
+end_date <- ymd("2019-04-10")
+
+# Calculate age week
+w_start <- ceiling((as.numeric(start_date - launch_date) + 1)/7)
+w_end <- ceiling((as.numeric(end_date - launch_date) + 1)/7)
+
+print(paste("w_start :", w_start))
+print(paste("w_end :", w_end))
+```
+
+Week fraction calculation
+```{r}
+frac_start_tmp <- as.numeric(start_date - launch_date)  %% 7
+frac_start <- 7 - frac_start_tmp
+frac_end <- ((as.numeric(end_date - launch_date) + 1) %% 7)
+
+paste("frac_start_tmp :", frac_start_tmp)
+paste("frac_start :", frac_start)
+paste("frac_end :", frac_end)
+```
+
+> `ifelse(frac_end == 0, 7 ,frac_end)`
+> `(frac_start/7)*w_start + (frac_end/7)*w_end`
+
