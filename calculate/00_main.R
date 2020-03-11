@@ -8,13 +8,15 @@ dt_sales <- read_delim("calculate/input/INPUT_SALE_DATA_20200206_030000.dat", de
 dt_lambda <- read_delim("calculate/input/lambda_20200206_110117.csv", delim = "|")
 dt_branch <- read_delim("calculate/input/branch_20200206_110122.csv", delim = "|")
 
-dt_result <- read_csv("calculate/input/200220_report_check.csv")
+dt_result <- read_csv("calculate/input/200221_report_check.csv")
 
 # Discount mapping --------------------------------------------------------
 
 source("calculate/02_data_reduction.R")
 
 dt_sales <- data_reduc(dt_sales, dt_result)
+
+print("========= Discount rage mapping completed")
 
 # Result preparation --------------------------------------------------------
 
@@ -24,11 +26,15 @@ dt_result <- prep_week(dt_result)
 
 dt_mapp <- dis_map(dt_result, dt_sales)
 
+print("========= Age week preparation mapping completed")
+
 # lambda mapping ----------------------------------------------------------
 
 dt_mapp <- lambda_map(dt_mapp, dt_lambda)
 
 dt_mapp <- branch_map(dt_mapp, dt_branch)
+
+print("========= Lambda mapping completed")
 
 # calculate ---------------------------------------------------------------
 
@@ -45,3 +51,5 @@ dt_output %>%
 dt_output <- sales_map(dt_output, dt_result)
   
 write_csv(dt_output, "calculate/output/sandbox_output.csv")
+
+print("========= Output file has been written")
