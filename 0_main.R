@@ -13,13 +13,13 @@ library(lubridate)
 # Checking working environment
 if(Sys.info()["sysname"] == "Windows") {
   
-  script_path <- "D:/R_project/HS_Forecast/"
-  file_path <- "D:/R_project/HS_Forecast/input/"
+  script_path <- "D:/R_project/Demand_Forecast/"
+  file_path <- "D:/R_project/Demand_Forecast/input/"
   con_name <- "latest_control.dat"
   dt_name <- "latest_TDM_HS.dat"
   map_name <- "model_mapping.dat"
-  log_path <- "D:/R_project/HS_Forecast/log/"
-  out_path <- "D:/R_project/HS_Forecast/output/"
+  log_path <- "D:/R_project/Demand_Forecast/log/"
+  out_path <- "D:/R_project/Demand_Forecast/output/"
   
 } else {
   
