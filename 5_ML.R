@@ -197,11 +197,15 @@ HS_forecast <- function(trade_agg, con_loop, log_path) {
       pred_tbl$pred <- predict(fitpois, newdata = pred_tbl, type = "response")
       
       # Cap maximum sales
+      # pred_tbl %>% 
+      #   mutate(pred = pred*bias,
+      #          pred = case_when(
+      #            pred > max(training_set$sales)*2 ~ round(max(training_set$sales)*2, digits = 2),
+      #            TRUE ~ round(pred, digits = 2))) -> pred_tbl
+      
+      # Unlock cap max
       pred_tbl %>% 
-        mutate(pred = pred*bias,
-               pred = case_when(
-                 pred > max(training_set$sales)*2 ~ round(max(training_set$sales)*2, digits = 2),
-                 TRUE ~ round(pred, digits = 2))) -> pred_tbl
+        mutate(pred = round(pred, digits = 2)) -> pred_tbl
       
       # Fill missing discount
       dis_all <- 1:5

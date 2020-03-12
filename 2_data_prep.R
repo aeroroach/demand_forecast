@@ -67,11 +67,13 @@ data_prep <- function(full_dt, log_path) {
   # Initiate low obs table
   agg_dt %>% 
     group_by(trade_product_brand, trade_product_model, product_subtype) %>% 
+    filter(age_week > max(age_week) - 12) %>%
     summarise(max_w = max(age_week),
               min_w = min(age_week),
               range = max_w - min_w,
               n = n()) %>% 
-    filter(n < 10 | max_w < 8 | max_w > 208) -> agg_exclude
+    filter(n < 10 | max_w < 8 | max_w > 208) %>% 
+    filter()-> agg_exclude
   
   omit_path = paste0(log_path, "omit_HS.csv")
   write_csv(agg_exclude, omit_path)
@@ -80,8 +82,10 @@ data_prep <- function(full_dt, log_path) {
   
   # Anti-join
   agg_dt %>% 
-    anti_join(agg_exclude, by = c("trade_product_brand", "trade_product_model", "product_subtype")) %>% 
-    filter(age_week > 4) -> agg_dt
+    anti_join(agg_exclude, by = c("trade_product_brand", "trade_product_model", "product_subtype")) %>%
+    group_by(trade_product_brand, trade_product_model, product_subtype) %>% 
+    filter(age_week > 4) %>% 
+    filter(age_week > max(age_week) - 12) -> agg_dt
   
   return(agg_dt)
 }
