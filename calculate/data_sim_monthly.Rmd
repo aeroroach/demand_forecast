@@ -1,0 +1,120 @@
+---
+title: "Data simulation test for monthly forecast"
+author: "Pitchayen S."
+date: "3/02/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Objective
+
+After scenario generation, the data should be simulate and test the calculation logic
+
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+
+
+## Data generation
+
+```{r}
+dt <- tibble(
+  case = 1:2,
+  launch_date = ymd("2019-01-03"),
+  start_date = ymd(c("2019-01-12", "2019-01-10")),
+  end_date = ymd(c("2019-04-12", "2019-04-10"))
+)
+
+dt %>% 
+  mutate(duration = as.numeric(end_date - start_date) + 1) -> dt
+
+dt
+```
+
+```{r}
+lam_sim <- tibble(
+  age_week = 1:18,
+  lambda = 28:11
+)
+
+lam_sim
+```
+
+## Calculating 3 months lambda
+
+```{r}
+lam_sim %>% 
+  mutate(lambda_3w = ceiling(age_week/3)) -> lam_sim
+
+lam_sim %>% 
+  group_by(lambda_3w) %>% 
+  summarise(lambda = sum(lambda)) -> lam_sim_3w
+
+lam_sim_3w
+```
+
+
+## Calculating week and fraction
+
+```{r}
+dt %>% 
+  mutate(w_start = ceiling((as.numeric(start_date - launch_date) + 1)/7), 
+         w_end = ceiling((as.numeric(end_date - launch_date) + 1)/7), 
+         frac_start_tmp = as.numeric(start_date - launch_date)  %% 7,
+         frac_start = 7 - frac_start_tmp, 
+         frac_end = ((as.numeric(end_date - launch_date) + 1) %% 7)) -> dt_cal
+
+dt_cal %>% 
+  select(case, duration:frac_end)
+```
+
+# Override value by case
+
+```{r}
+dt_cal %>% 
+  mutate(frac_end = ifelse(frac_end == 0, 7, frac_end)
+         ) -> dt_mod
+
+dt_mod %>% 
+  select(case, duration:frac_end)
+```
+
+## Mapping with lambda
+
+```{r}
+dt_mod %>% 
+  left_join(lam_sim, by = c("w_start"="age_week")) %>% 
+  left_join(lam_sim, by = c("w_end"="age_week"), suffix = c("","_w_end")) %>% 
+  rename(lambda_w_start = lambda) -> dt_join
+
+dt_join %>% 
+  select(case, lambda_w_start:lambda_w_end)
+```
+
+## Calculate w_between
+
+```{r}
+agg_between <- NULL
+
+for (i in dt_join$case) {
+  
+  lam_sim %>% 
+    filter(age_week > dt_join$w_start[i], age_week < dt_join$w_end[i]) %>% 
+    summarise()
+  
+}
+```
+
+
+## Calculating final output
+
+```{r}
+dt_join %>% 
+  mutate(sum_lambda = ((frac_start/7)*lambda_w_start) + ((frac_end/7)*lambda_w_end)) %>% 
+  select(case, lambda_w_start:sum_lambda)
+```
+
