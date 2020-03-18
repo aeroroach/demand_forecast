@@ -7,7 +7,7 @@
 #Version 2.1 : Boosting new handset model
 #Version 2.2 : Fix bug for some newly launch model
 #Version 2.3 : Limit training to 3 month and unlock cap max
-#Version 2.4 : Fixed over forecast and set cap max 
+#Version 2.4 : Fixed bug for cap max
 
 I_AM_VERSION="V2.4"
 APP_HOME="/home/tdmdf/HS_forecast"
