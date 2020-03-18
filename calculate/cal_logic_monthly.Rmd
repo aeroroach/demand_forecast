@@ -76,6 +76,8 @@ print(paste("w_start :", w_start))
 print(paste("w_end :", w_end))
 ```
 
+> `w_between` = aggregation of `age_week` > 2 & `age_week` < 15
+
 Week fraction calculation
 ```{r}
 frac_start_tmp <- as.numeric(start_date - launch_date)  %% 7
@@ -88,5 +90,5 @@ paste("frac_end :", frac_end)
 ```
 
 > `ifelse(frac_end == 0, 7 ,frac_end)`
-> `(frac_start/7)*w_start + (frac_end/7)*w_end`
+> `(frac_start/7)*w_start + w_between + (frac_end/7)*w_end`
 

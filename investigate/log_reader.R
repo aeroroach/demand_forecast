@@ -1,6 +1,6 @@
 library(tidyverse)
 
-lambda_tbl <- read_delim("output/lambda_20200311_141633.csv", delim = "|")
+lambda_tbl <- read_delim("output/lambda_20200317_144438.csv", delim = "|")
 
 omit <- read_csv("/data01/pitchaym/HS_forecast/log/omit_HS.csv")
 
