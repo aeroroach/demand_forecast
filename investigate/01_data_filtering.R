@@ -26,7 +26,7 @@ full_dt %>%
 
 trade_agg <- data_prep(full_dt, log_path)
 
-lambda <- read_delim("output/lambda_20200311_161323.csv", delim = "|")
+lambda <- read_delim("output/lambda_20200318_143500.csv", delim = "|")
 
 lambda %>% 
   filter(trade_product_model %in% fil_model) %>% 

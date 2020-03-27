@@ -25,8 +25,8 @@ library(lubridate)
 dt <- tibble(
   case = 1:2,
   launch_date = ymd("2019-01-03"),
-  start_date = ymd(c("2019-01-12", "2019-01-10")),
-  end_date = ymd(c("2019-04-12", "2019-04-10"))
+  start_date = ymd(c("2019-01-12", "2019-03-28")),
+  end_date = ymd(c("2019-04-05", "2019-06-19"))
 )
 
 dt %>% 
@@ -37,24 +37,24 @@ dt
 
 ```{r}
 lam_sim <- tibble(
-  age_week = 1:18,
-  lambda = 28:11
+  age_week = 1:24,
+  lambda = 34:11
 )
 
 lam_sim
 ```
 
-## Calculating 3 months lambda
+## Calculating Quarter Lambda
 
 ```{r}
 lam_sim %>% 
-  mutate(lambda_3w = ceiling(age_week/3)) -> lam_sim
+  mutate(age_Q = ceiling(age_week/12)) -> lam_sim_Q
 
-lam_sim %>% 
-  group_by(lambda_3w) %>% 
-  summarise(lambda = sum(lambda)) -> lam_sim_3w
+lam_sim_Q %>% 
+  group_by(age_Q) %>% 
+  summarise(lambda_Q = sum(lambda)) -> lam_sim_Q
 
-lam_sim_3w
+lam_sim_Q
 ```
 
 
@@ -62,59 +62,35 @@ lam_sim_3w
 
 ```{r}
 dt %>% 
-  mutate(w_start = ceiling((as.numeric(start_date - launch_date) + 1)/7), 
-         w_end = ceiling((as.numeric(end_date - launch_date) + 1)/7), 
-         frac_start_tmp = as.numeric(start_date - launch_date)  %% 7,
-         frac_start = 7 - frac_start_tmp, 
-         frac_end = ((as.numeric(end_date - launch_date) + 1) %% 7)) -> dt_cal
+  mutate(q_start = ceiling((as.numeric(start_date - launch_date) + 1)/84), 
+         q_end = ceiling((as.numeric(end_date - launch_date) + 1)/84), 
+         frac_start_tmp = as.numeric(start_date - launch_date)  %% 84,
+         frac_start = 84 - frac_start_tmp, 
+         frac_end = ((as.numeric(end_date - launch_date) + 1) %% 84)) -> dt_cal
 
 dt_cal %>% 
   select(case, duration:frac_end)
 ```
 
-# Override value by case
-
-```{r}
-dt_cal %>% 
-  mutate(frac_end = ifelse(frac_end == 0, 7, frac_end)
-         ) -> dt_mod
-
-dt_mod %>% 
-  select(case, duration:frac_end)
-```
+> `frac_start_tmp` and `frac_end` always 0 together due to 1 variation of forecast duration
 
 ## Mapping with lambda
 
 ```{r}
-dt_mod %>% 
-  left_join(lam_sim, by = c("w_start"="age_week")) %>% 
-  left_join(lam_sim, by = c("w_end"="age_week"), suffix = c("","_w_end")) %>% 
-  rename(lambda_w_start = lambda) -> dt_join
+dt_cal %>% 
+  left_join(lam_sim_Q, by = c("q_start"="age_Q")) %>% 
+  left_join(lam_sim_Q, by = c("q_end"="age_Q"), suffix = c("","_end")) %>% 
+  rename(lambda_Q_start = lambda_Q) -> dt_join
 
 dt_join %>% 
-  select(case, lambda_w_start:lambda_w_end)
+  select(case, lambda_Q_start:lambda_Q_end)
 ```
-
-## Calculate w_between
-
-```{r}
-agg_between <- NULL
-
-for (i in dt_join$case) {
-  
-  lam_sim %>% 
-    filter(age_week > dt_join$w_start[i], age_week < dt_join$w_end[i]) %>% 
-    summarise()
-  
-}
-```
-
 
 ## Calculating final output
 
 ```{r}
 dt_join %>% 
-  mutate(sum_lambda = ((frac_start/7)*lambda_w_start) + ((frac_end/7)*lambda_w_end)) %>% 
-  select(case, lambda_w_start:sum_lambda)
+  mutate(sum_lambda = ((frac_start/7)*lambda_Q_start) + ((frac_end/7)*lambda_Q_end)) %>% 
+  select(case, lambda_Q_start:sum_lambda)
 ```
 
