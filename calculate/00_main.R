@@ -3,12 +3,19 @@ library(lubridate)
 
 # Data reading ------------------------------------------------------------
 
-dt_sales <- read_delim("calculate/input/INPUT_SALE_DATA_20200206_030000.dat", delim = "|")
+dt_sales <- read_delim("input/latest_TDM_HS.dat", delim = "|")
 
-dt_lambda <- read_delim("calculate/input/lambda_20200317_144438.csv", delim = "|")
-dt_branch <- read_delim("calculate/input/branch_20200317_144439.csv", delim = "|")
+# Getting latest lambda
+last_lambda <- sort(list.files("output/", pattern = "lambda"), decreasing = T)[1]
+dt_lambda <- read_delim(paste0("output/",last_lambda ), delim = "|")
 
-dt_result <- read_csv("calculate/input/200221_report_check.csv")
+# Getting latest branch
+last_branch <- sort(list.files("output/", pattern = "branch"), decreasing = T)[1]
+dt_branch <- read_delim(paste0("output/",last_branch ), delim = "|")
+
+# Run the merge file function once
+# source("calculate/03_merge_file.R")
+dt_result <- read_csv("calculate/input/latest3m_report.csv")
 
 # Discount mapping --------------------------------------------------------
 
@@ -16,7 +23,7 @@ source("calculate/02_data_reduction.R")
 
 dt_sales <- data_reduc(dt_sales, dt_result)
 
-print("========= Discount rage mapping completed")
+print("========= Discount rate mapping completed")
 
 # Result preparation --------------------------------------------------------
 
@@ -50,6 +57,6 @@ dt_output %>%
 
 dt_output <- sales_map(dt_output, dt_result)
   
-write_csv(dt_output, "calculate/output/sandbox_output.csv")
+write_csv(dt_output, "shiny/input/sandbox_output.csv")
 
 print("========= Output file has been written")

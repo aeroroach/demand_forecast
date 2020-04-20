@@ -6,27 +6,27 @@ library(lubridate)
 source("1_data_cleansing.R")
 source("2_data_prep.R")
 
-script_path <- "D:/R_project/Demand_Forecast/"
-file_path <- "D:/R_project/Demand_Forecast/input/"
+script_path <- ""
+file_path <- "input/"
 con_name <- "latest_control.dat"
 dt_name <- "latest_TDM_HS.dat"
 map_name <- "model_mapping.dat"
-log_path <- "D:/R_project/Demand_Forecast/log/"
-out_path <- "D:/R_project/Demand_Forecast/output/"
+log_path <- "log/"
+out_path <- "output/"
 
 # Data Reading ------------------------------------------------------------
 
 
 full_dt <- data_clean(file_path, con_name, dt_name)
 
-fil_model <- c("A520-64CDMSL", "NOVA5T", "Y6SSL", "Y11CDMSL")
+fil_model <- c("IPHONE8P128L")
 
 full_dt %>% 
   filter(trade_product_model %in% fil_model) -> full_dt
 
 trade_agg <- data_prep(full_dt, log_path)
 
-lambda <- read_delim("output/lambda_20200318_143500.csv", delim = "|")
+lambda <- read_delim("output/lambda_20200317_144438.csv", delim = "|")
 
 lambda %>% 
   filter(trade_product_model %in% fil_model) %>% 
