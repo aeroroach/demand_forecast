@@ -1,0 +1,5 @@
+Group,Desc
+All data,Data without any error criteria
+Proper forecast,Filtering only -40% <= %Error <= 40%
+Under forecast,Filtering only %Error < -40%
+Over forecast,Filtering only %Error > 40%
