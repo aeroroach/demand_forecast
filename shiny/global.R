@@ -16,7 +16,9 @@ dt <- read_csv("input/sandbox_output.csv")
 dt %>% 
   filter(STOCK_ON_HAND_AMT > 0, SALE_AMT > 0) %>% 
   mutate(SALE_AMT = ifelse(is.na(SALE_AMT),0,SALE_AMT), 
-         LOCATION_CODE = as.character(LOCATION_CODE))  -> dt
+         LOCATION_CODE = as.character(LOCATION_CODE), 
+         HS_age = ceiling(as.numeric(REQ_DATE - LUNCH_DATE)/7)) %>% 
+  filter(HS_age > 8) -> dt
 
 
 # Calculate measure -------------------------------------------------------
