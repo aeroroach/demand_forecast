@@ -1,6 +1,11 @@
 library(tidyverse)
 
-lambda_tbl <- read_delim("output/lambda_20200317_144438.csv", delim = "|")
+latest_lambda <- sort(list.files("output", pattern = "lambda"), decreasing = T)[1]
+latest_branch <- sort(list.files("output", pattern = "branch"), decreasing = T)[1]
+
+lambda_tbl <- read_delim(paste0("output/", latest_lambda), delim = "|")
+
+branch_tbl <- read_delim(paste0("output/", latest_branch), delim = "|")
 
 omit <- read_csv("log/omit_HS.csv")
 
@@ -10,11 +15,7 @@ pre <- read_csv("log/pre_Diag.csv")
 # Log comparison ----------------------------------------------------------
 
 
-log <- read_csv("log/log_ML_all.csv")
-
-log_2m <- read_csv("log/log_ML_2m.csv")
-
-log_3m <- read_csv("log/log_ML_3m.csv")
+log <- read_csv("log/log_ML.csv")
 
 log %>% 
   select(HS_brand, HS_model, HS_subtype, RMSE, MAPE) %>% 
