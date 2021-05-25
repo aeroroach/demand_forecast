@@ -1,0 +1,67 @@
+---
+title: "Sales analysis"
+author: "Pitchayen S."
+date: "26/8/2563"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading data
+
+```{r}
+library(tidyverse)
+```
+```{r}
+df <- read_delim("D:/R_project/Demand_Forecast/input/latest_TDM_HS.dat", delim = "|")
+```
+```{r}
+df %>% 
+  filter(sale_date >= as.Date("2020-01-01")) %>% 
+  group_by(trade_product_brand, trade_product_model) %>% 
+  summarise(total_sale = sum(sale_amount)) %>% 
+  arrange(desc(total_sale))
+```
+
+Selected model is...
+* IPHONE11128
+* IPHONE1164
+* IPHONE11PM256
+* S5506
+* A520-64CDMSL
+* NOVA5T
+* Y6SSL
+* Y11CDMSL
+* A107L
+* G988B
+* A715F8/128
+
+```{r}
+selected_hs <- c("IPHONE11128", "IPHONE1164", "IPHONE11PM256", "S5506", 
+                 "A520-64CDMSL", "NOVA5T", "Y6SSL", "Y11CDMSL", "A107L", 
+                 "G988B", "A715F8/128")
+
+df %>% 
+  filter(trade_product_model %in% selected_hs) -> df_filter
+```
+
+```{r}
+write_delim(df_filter, "TDM_selected.dat", delim = "|")
+```
+
+## Selected Control
+
+```{r}
+control <- read_delim("D:/R_project/Demand_Forecast/input/latest_control.dat", 
+                      delim = "|")
+
+control %>% 
+  filter(trade_product_model %in% selected_hs) -> control_selected
+```
+
+```{r}
+write_delim(control_selected, "control_selected.dat", delim = "|")
+```
+

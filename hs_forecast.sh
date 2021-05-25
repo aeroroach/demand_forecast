@@ -157,3 +157,5 @@ echo "$(date +"%Y-%m-%d %H:%M:%S") : Begin : Transfer Output file to NAS" >> "$A
     fi
 
 echo "================================================================" >> "$APP_LOG_FILE" 2>&1
+/home/tdmdf/HS_forecast/script/mail_log.sh 
+

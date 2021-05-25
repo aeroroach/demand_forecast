@@ -1,0 +1,228 @@
+---
+title: "Model Comparison"
+author: "Pitchayen S."
+date: "26/8/2563"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Library
+
+```{r}
+library(tidymodels)
+library(readr)
+library(lubridate)
+library(poissonreg)
+```
+
+## Function loading
+
+```{r}
+source("D:/R_project/Demand_Forecast/1_data_cleansing.R")
+source("D:/R_project/Demand_Forecast/2_data_prep.R")
+source("D:/R_project/Demand_Forecast/4_splitting.R")
+```
+
+## Data loading and initial cleansing
+
+```{r}
+path <- "D:/R_project/Demand_Forecast/markdown/"
+df_name <- "TDM_selected.dat"
+con_name <- "control_selected.dat"
+
+df <- data_clean(path, con_name, df_name)
+```
+
+## Data preparation
+
+```{r}
+df <- data_prep(df, "log/")
+```
+```{r}
+glimpse(df)
+```
+## Selected one major HS
+
+```{r}
+select_hs <- "IPHONE11128"
+df %>% 
+  filter(trade_product_model == "IPHONE11128") -> df_selected
+```
+
+```{r}
+df_selected %>% 
+  group_by(age_week) %>% 
+  summarise(total_sales = sum(sales)) %>% 
+  ggplot(aes(x = age_week, y = total_sales)) + geom_line()
+```
+Ignore the boosting flag
+
+```{r}
+df_selected %>% 
+  group_by(trade_product_brand, trade_product_model, product_subtype, 
+           age_week, dis_cat) %>% 
+  summarise(sales = sum(sales)) -> df_selected
+```
+## Splitting data
+
+```{r}
+df_sel_split <- trade_split(df_selected)
+
+df_sel_train <- df_sel_split$train
+df_sel_test <- df_sel_split$test
+```
+
+## Prepare poisson recipe
+
+```{r}
+df_sel_train %>% 
+  recipe(sales ~ .) %>%
+  update_role(trade_product_brand, trade_product_model, product_subtype, 
+              range_week, index, new_role = "ID") -> sel_rec
+
+summary(sel_rec)
+```
+## Prepare Poisson regression workflow
+
+```{r}
+poisson_reg() %>% 
+  set_engine("glm") -> ps_mod
+
+workflow() %>% 
+  add_recipe(sel_rec) %>% 
+  add_model(ps_mod) -> ps_workflow
+```
+
+### Fit poisson
+
+```{r}
+df_fit <- ps_workflow %>% fit(data = df_sel_train)
+
+initial_fit <- pull_workflow_fit(df_fit)$fit$fitted.values
+
+df_sel_train %>% 
+  mutate(predict = initial_fit, 
+         res = abs(sales - predict), 
+         res_prop = abs(sales - predict)/predict) -> df_sel_remove
+
+# Finding outlier
+topres <- quantile(df_sel_remove$res, .95)
+topresprop <- quantile(df_sel_remove$res_prop, .95)
+
+df_sel_remove %>% 
+      filter(res < topres, res_prop < topresprop) %>% 
+      select(-res, -res_prop) -> df_sel_remove
+
+df_fit_final <- ps_workflow %>% fit(data = df_sel_remove)
+```
+
+### Estimate performance
+
+```{r}
+pred_ps <- predict(df_fit_final, df_sel_test)
+df_sel_result <- bind_cols(df_sel_test, pred_ps)
+
+df_sel_result %>% 
+  mutate(res = abs(sales - .pred),
+         res_prop = abs(sales - .pred)/.pred) %>% 
+  select(res, res_prop) -> tmp_result
+
+
+print(paste("RMSE is", mean(tmp_result$res)))
+print(paste("MAPE is", mean(tmp_result$res_prop)))
+```
+
+### Histogram
+
+```{r}
+tmp_result %>% 
+  ggplot(aes(x = res)) + geom_histogram(binwidth = 2)
+
+tmp_result %>% 
+  ggplot(aes(x = res_prop)) + geom_histogram(binwidth = 0.1)
+```
+
+
+## Prepare GLMnet poisson regression workflow
+
+### Prepare elastic net recipe
+
+```{r}
+df_sel_train %>% 
+  recipe(sales ~ .) %>%
+  update_role(trade_product_brand, trade_product_model, product_subtype, 
+              range_week, index, new_role = "ID") %>% 
+  step_dummy(dis_cat) %>% 
+  step_zv(all_predictors()) -> elnet_rec
+
+summary(elnet_rec)
+```
+
+
+### Tuning elastic net grid
+```{r}
+library(glmnet)
+
+poisson_reg(penalty = tune(), mixture = tune()) %>% 
+  set_engine("glmnet") -> elnet_mod
+
+elnet_grid <- grid_regular(penalty(),
+                           mixture(), levels = 5)
+
+set.seed(255)
+cell_folds <- vfold_cv(df_sel_train, v = 5)
+
+workflow() %>% 
+  add_recipe(elnet_rec) %>% 
+  add_model(elnet_mod) -> elnet_workflow
+
+elnet_workflow %>% 
+  tune_grid(
+    resamples = cell_folds, 
+    grid = elnet_grid,
+  ) -> elnet_res
+```
+
+```{r}
+elnet_res %>% 
+  collect_metrics()
+```
+
+```{r}
+elnet_res %>% 
+  select_best("rmse") -> best_el
+
+elnet_workflow %>% 
+  finalize_workflow(best_el) -> elnet_final
+```
+
+```{r}
+elnet_final %>% 
+  fit(data = df_sel_train) -> elnet_final_mod
+```
+
+```{r}
+pred_el <- predict(elnet_final_mod, df_sel_test)
+df_sel_result <- bind_cols(df_sel_test, pred_el)
+
+df_sel_result %>% 1
+  mutate(res = abs(sales - .pred),
+         res_prop = abs(sales - .pred)/.pred) %>% 
+  select(res, res_prop) -> tmp_result
+
+
+print(paste("RMSE is", mean(tmp_result$res)))
+print(paste("MAPE is", mean(tmp_result$res_prop)))
+```
+### Histogram
+
+```{r}
+tmp_result %>% 
+  ggplot(aes(x = res)) + geom_histogram(binwidth = 2)
+
+tmp_result %>% 
+  ggplot(aes(x = res_prop)) + geom_histogram(binwidth = 0.1)
+```
