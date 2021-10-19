@@ -10,7 +10,7 @@ APP_LOG_FILE="$APP_LOG/HS_forecast.log"
 
 DT=`date +%d%m%y`; export DT
 
-mailx -s "HS forcast log" danaisuj@ais.co.th,pitchaym@ais.co.th,vasarucr@ais.co.th,puttipon@ais.co.th < $APP_LOG_FILE
+mailx -s "HS forcast log" danaisuj@ais.co.th,kankawek@ais.co.th,vasarucr@ais.co.th,puttipon@ais.co.th < $APP_LOG_FILE
 
 mv $APP_LOG_FILE $APP_LOG_FILE.$DT
 

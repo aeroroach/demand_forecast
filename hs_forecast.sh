@@ -150,10 +150,10 @@ echo "$(date +"%Y-%m-%d %H:%M:%S") : Begin : Transfer Output file to NAS" >> "$A
     if [ "$?" -eq 0 ]
     then
      echo "$(date +"%Y-%m-%d %H:%M:%S") : HS Forecast Completed" >> "$APP_LOG_FILE" 2>&1
-     echo "$(date +"%Y-%m-%d %H:%M:%S") : HS Forecast Completed" | mailx -s "HS_Forecast Job" pitchaym@ais.co.th lurtratr@ais.co.th danaisuj@ais.co.th
+     echo "$(date +"%Y-%m-%d %H:%M:%S") : HS Forecast Completed" | mailx -s "HS_Forecast Job" kankawek@ais.co.th lurtratr@ais.co.th danaisuj@ais.co.th
     else
      echo "$(date +"%Y-%m-%d %H:%M:%S") : HS Forecast Fail" >> "$APP_LOG_FILE" 2>&1
-     echo "$(date +"%Y-%m-%d %H:%M:%S") : HS Forecast Fail" | mailx -s "HS_Forecast Job" pitchaym@ais.co.th lurtratr@ais.co.th danaisuj@ais.co.th
+     echo "$(date +"%Y-%m-%d %H:%M:%S") : HS Forecast Fail" | mailx -s "HS_Forecast Job" kankawek@ais.co.th lurtratr@ais.co.th danaisuj@ais.co.th
     fi
 
 echo "================================================================" >> "$APP_LOG_FILE" 2>&1
