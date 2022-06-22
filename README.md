@@ -1,5 +1,9 @@
-# Demand Forecast
-This project has been release in production in on premise VM in batch processing. This repository pack all the coding and material that use in this project. There's also a document that explain the whole process in Wiki page.
+# Demand Forecast Project
+This project is the example of R codes that has been push to productionize state. It's for the forecast of handset devices that will be allocating to each shops
+
+This algorithm is quite simple (poisson regression) which is quite efficient for integrating into existing legacy system and the result is precise enough to utilize in the real world case.
+
+The interesting points for this project is to use traditional statistics such as poisson distribution to determine the probability of the out of stock situation and estimate the confidence buffer.
 
 ## Path structure
 - 📦Demand_Forecast
